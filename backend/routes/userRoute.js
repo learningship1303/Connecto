@@ -1,12 +1,19 @@
-import express from "express";
-import { getOtherUsers, login, logout, register } from "../controllers/userController.js";
-import isAuthenticated from "../middleware/isAuthenticated.js";
+const express = require("express");
+
+const {
+  getAllUsers,
+  searchUsers,
+  updateProfile,
+} = require("../controllers/userController");
+
+const { isAuthenticated } = require("../middleware/isAuthenticated");
 
 const router = express.Router();
 
-router.route("/register").post(register);
-router.route("/login").post(login);
-router.route("/logout").get(logout);
-router.route("/").get(isAuthenticated,getOtherUsers);
+router.get("/", isAuthenticated, getAllUsers);
 
-export default router;
+router.get("/search", isAuthenticated, searchUsers);
+
+router.put("/update", isAuthenticated, updateProfile);
+
+module.exports = router;

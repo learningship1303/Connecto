@@ -1,0 +1,50 @@
+/* ============================= */
+/* Custom Scrollbar */
+/* ============================= */
+
+::-webkit-scrollbar{
+    width:8px;
+    height:8px;
+}
+
+::-webkit-scrollbar-track{
+
+    background:var(--background);
+
+    border-radius:999px;
+
+}
+
+::-webkit-scrollbar-thumb{
+
+    background:linear-gradient(
+        180deg,
+        var(--primary),
+        var(--secondary)
+    );
+
+    border-radius:999px;
+
+    border:2px solid var(--background);
+
+}
+
+::-webkit-scrollbar-thumb:hover{
+
+    background:linear-gradient(
+        180deg,
+        var(--primary-hover),
+        var(--secondary)
+    );
+
+}
+
+/* Firefox */
+
+*{
+
+    scrollbar-width:thin;
+
+    scrollbar-color:var(--primary) var(--background);
+
+}

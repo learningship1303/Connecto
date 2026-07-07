@@ -1,94 +1,79 @@
-import { User } from "../models/userModel.js";
-import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
+const asyncHandler = require("express-async-handler");
+const User = require("../models/userModel");
 
-export const register = async (req, res) => {
-    try {
-        const { fullName, username, password, confirmPassword, gender } = req.body;
-        if (!fullName || !username || !password || !confirmPassword || !gender) {
-            return res.status(400).json({ message: "All fields are required" });
-        }
-        if (password !== confirmPassword) {
-            return res.status(400).json({ message: "Password do not match" });
-        }
+// ======================================================
+// Get All Users
+// ======================================================
 
-        const user = await User.findOne({ username });
-        if (user) {
-            return res.status(400).json({ message: "Username already exit try different" });
-        }
-        const hashedPassword = await bcrypt.hash(password, 10);
+exports.getAllUsers = asyncHandler(async (req, res) => {
+  const users = await User.find({
+    _id: { $ne: req.user._id },
+  }).select("-password");
 
-        // profilePhoto
-        const maleProfilePhoto = `https://avatar.iran.liara.run/public/boy?username=${username}`;
-        const femaleProfilePhoto = `https://avatar.iran.liara.run/public/girl?username=${username}`;
+  res.status(200).json({
+    success: true,
+    count: users.length,
+    users,
+  });
+});
 
-        await User.create({
-            fullName,
-            username,
-            password: hashedPassword,
-            profilePhoto: gender === "male" ? maleProfilePhoto : femaleProfilePhoto,
-            gender
-        });
-        return res.status(201).json({
-            message: "Account created successfully.",
-            success: true
-        })
-    } catch (error) {
-        console.log(error);
-    }
-};
-export const login = async (req, res) => {
-    try {
-        const { username, password } = req.body;
-        if (!username || !password) {
-            return res.status(400).json({ message: "All fields are required" });
-        };
-        const user = await User.findOne({ username });
-        if (!user) {
-            return res.status(400).json({
-                message: "Incorrect username or password",
-                success: false
-            })
-        };
-        const isPasswordMatch = await bcrypt.compare(password, user.password);
-        if (!isPasswordMatch) {
-            return res.status(400).json({
-                message: "Incorrect username or password",
-                success: false
-            })
-        };
-        const tokenData = {
-            userId: user._id
-        };
+// ======================================================
+// Search Users
+// ======================================================
 
-        const token = await jwt.sign(tokenData, process.env.JWT_SECRET_KEY, { expiresIn: '1d' });
+exports.searchUsers = asyncHandler(async (req, res) => {
+  const keyword = req.query.keyword || "";
 
-        return res.status(200).cookie("token", token, { maxAge: 1 * 24 * 60 * 60 * 1000, httpOnly: true, sameSite: 'strict' }).json({
-            _id: user._id,
-            username: user.username,
-            fullName: user.fullName,
-            profilePhoto: user.profilePhoto
-        });
+  const users = await User.find({
+    _id: { $ne: req.user._id },
+    $or: [
+      {
+        fullName: {
+          $regex: keyword,
+          $options: "i",
+        },
+      },
+      {
+        username: {
+          $regex: keyword,
+          $options: "i",
+        },
+      },
+    ],
+  }).select("-password");
 
-    } catch (error) {
-        console.log(error);
-    }
-}
-export const logout = (req, res) => {
-    try {
-        return res.status(200).cookie("token", "", { maxAge: 0 }).json({
-            message: "logged out successfully."
-        })
-    } catch (error) {
-        console.log(error);
-    }
-}
-export const getOtherUsers = async (req, res) => {
-    try {
-        const loggedInUserId = req.id;
-        const otherUsers = await User.find({ _id: { $ne: loggedInUserId } }).select("-password");
-        return res.status(200).json(otherUsers);
-    } catch (error) {
-        console.log(error);
-    }
-}
+  res.status(200).json({
+    success: true,
+    users,
+  });
+});
+
+// ======================================================
+// Update Profile
+// ======================================================
+
+exports.updateProfile = asyncHandler(async (req, res) => {
+  const { fullName, username, bio, theme } = req.body;
+
+  const user = await User.findById(req.user._id);
+
+  if (!user) {
+    return res.status(404).json({
+      success: false,
+      message: "User not found.",
+    });
+  }
+
+  if (fullName) user.fullName = fullName;
+  if (username) user.username = username;
+  if (bio) user.bio = bio;
+  if (theme) user.theme = theme;
+
+  await user.save();
+
+  res.status(200).json({
+    success: true,
+    message: "Profile updated successfully.",
+    user,
+  });
+});
