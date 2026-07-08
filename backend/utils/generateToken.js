@@ -1,7 +1,7 @@
 const jwt = require("jsonwebtoken");
 
 const generateToken = (id) => {
-  const jwtSecret = process.env.JWT_SECRET || process.env.JWT_SECRET_KEY;
+  const jwtSecret = process.env.JWT_SECRET;
 
   if (!jwtSecret) {
     throw new Error("JWT_SECRET is missing");

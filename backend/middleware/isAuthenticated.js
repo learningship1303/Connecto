@@ -18,7 +18,7 @@ exports.isAuthenticated = asyncHandler(async (req, res, next) => {
   }
 
   try {
-    const jwtSecret = process.env.JWT_SECRET || process.env.JWT_SECRET_KEY;
+    const jwtSecret = process.env.JWT_SECRET;
 
     if (!jwtSecret) {
       return res.status(500).json({

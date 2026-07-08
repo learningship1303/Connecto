@@ -7,10 +7,10 @@ React + Vite frontend for Connecto.
 Create a `frontend/.env` file when you need to point the frontend to a deployed backend:
 
 ```env
-VITE_API_BASE_URL=http://localhost:8080
+VITE_API_BASE_URL=http://localhost:8000
 ```
 
-For local development, the app defaults to `http://localhost:8080` if `VITE_API_BASE_URL` is not set.
+For local development, the app defaults to `http://localhost:8000` if `VITE_API_BASE_URL` is not set.
 
 ## Commands
 

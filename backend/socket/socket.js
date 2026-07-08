@@ -4,28 +4,28 @@ let io;
 
 const userSocketMap = {};
 
-const initializeSocket = (server) => {
-  const configuredOrigins = [
-    process.env.CLIENT_URL,
-    process.env.CLIENT_URLS,
-  ]
-    .filter(Boolean)
-    .flatMap((originList) => originList.split(","))
-    .map((origin) => origin.trim().replace(/\/$/, ""))
-    .filter(Boolean);
+const normalizeOrigin = (origin) => origin?.trim().replace(/\/$/, "");
 
+const initializeSocket = (server) => {
   const allowedOrigins = [
-    ...new Set([
-      ...configuredOrigins,
-      "http://localhost:5173",
-      "http://127.0.0.1:5173",
-    ]),
+    ...new Set(
+      [
+        process.env.CLIENT_URL,
+        process.env.CLIENT_URLS,
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+      ]
+      .filter(Boolean)
+      .flatMap((originList) => originList.split(","))
+      .map(normalizeOrigin)
+      .filter(Boolean)
+    ),
   ];
 
   io = new Server(server, {
     cors: {
       origin(origin, callback) {
-        const normalizedOrigin = origin?.replace(/\/$/, "");
+        const normalizedOrigin = normalizeOrigin(origin);
 
         if (!normalizedOrigin || allowedOrigins.includes(normalizedOrigin)) {
           return callback(null, true);
@@ -35,7 +35,9 @@ const initializeSocket = (server) => {
       },
       credentials: true,
       methods: ["GET", "POST"],
+      allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
     },
+    transports: ["websocket", "polling"],
   });
 
   io.on("connection", (socket) => {

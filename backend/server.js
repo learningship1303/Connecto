@@ -25,30 +25,28 @@ const io = initializeSocket(server);
 
 app.set("io", io);
 
-const getAllowedOrigins = () => {
-  const configuredOrigins = [
-    process.env.CLIENT_URL,
-    process.env.CLIENT_URLS,
-  ]
-    .filter(Boolean)
-    .flatMap((originList) => originList.split(","))
-    .map((origin) => origin.trim().replace(/\/$/, ""))
-    .filter(Boolean);
+const normalizeOrigin = (origin) => origin?.trim().replace(/\/$/, "");
 
-  return [
-    ...configuredOrigins,
-    "http://localhost:5173",
-    "http://127.0.0.1:5173",
-  ];
-};
-
-const allowedOrigins = [
-  ...new Set(getAllowedOrigins()),
+const getAllowedOrigins = () => [
+  ...new Set(
+    [
+      process.env.CLIENT_URL,
+      process.env.CLIENT_URLS,
+      "http://localhost:5173",
+      "http://127.0.0.1:5173",
+    ]
+      .filter(Boolean)
+      .flatMap((originList) => originList.split(","))
+      .map(normalizeOrigin)
+      .filter(Boolean)
+  ),
 ];
+
+const allowedOrigins = getAllowedOrigins();
 
 const corsOptions = {
   origin(origin, callback) {
-    const normalizedOrigin = origin?.replace(/\/$/, "");
+    const normalizedOrigin = normalizeOrigin(origin);
 
     if (!normalizedOrigin || allowedOrigins.includes(normalizedOrigin)) {
       return callback(null, true);
@@ -58,7 +56,8 @@ const corsOptions = {
   },
   credentials: true,
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
+  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
+  optionsSuccessStatus: 204,
 };
 
 app.use(helmet());

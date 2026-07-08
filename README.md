@@ -12,18 +12,22 @@ Connecto is a full-stack real-time chat application by Adhya Singh.
 Copy `.env.example` to `.env` in the project root and add your own credentials:
 
 ```env
-PORT=8080
+PORT=8000
 MONGO_URI=mongodb+srv://<username>:<password>@<cluster-url>/<database-name>?retryWrites=true&w=majority
-JWT_SECRET_KEY=replace-this-with-a-strong-random-secret
+JWT_SECRET=replace-this-with-a-strong-random-secret
+JWT_EXPIRES_IN=7d
 CLIENT_URL=http://localhost:5173
+CLIENT_URLS=http://localhost:5173,http://127.0.0.1:5173
 ```
 
 Required manual updates:
 
 - `MONGO_URI`: your MongoDB Atlas or MongoDB connection string.
-- `JWT_SECRET_KEY`: a strong random secret. Generate one with `node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"`.
+- `JWT_SECRET`: a strong random secret. Generate one with `node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"`.
+- `JWT_EXPIRES_IN`: JWT lifetime, for example `7d`.
 - `CLIENT_URL`: frontend URL allowed by CORS. Use `http://localhost:5173` locally.
-- `VITE_API_BASE_URL`: frontend backend URL. Create `frontend/.env` from `frontend/.env.example` if you need a value other than `http://localhost:8080`.
+- `CLIENT_URLS`: comma-separated additional frontend URLs allowed by CORS and Socket.IO.
+- `VITE_API_BASE_URL`: frontend backend URL. Create `frontend/.env` from `frontend/.env.example` if you need a value other than `http://localhost:8000`.
 
 ## Backend Setup
 
@@ -34,7 +38,7 @@ npm install
 npm run dev
 ```
 
-The backend runs on `http://localhost:8080` when `PORT=8080`.
+The backend runs on `http://localhost:8000` when `PORT=8000`.
 
 ## Frontend Setup
 
