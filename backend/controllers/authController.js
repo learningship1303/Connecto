@@ -116,11 +116,13 @@ exports.loginUser = asyncHandler(async (req, res) => {
 // ======================================================
 
 exports.logoutUser = asyncHandler(async (req, res) => {
+  const isProduction = process.env.NODE_ENV === "production";
+
   res.cookie("token", "", {
     expires: new Date(0),
     httpOnly: true,
-    sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
+    sameSite: isProduction ? "none" : "lax",
+    secure: isProduction,
   });
 
   res.status(200).json({

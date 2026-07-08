@@ -24,12 +24,13 @@ const getCookieMaxAge = () => {
 
 const sendToken = (user, statusCode, res) => {
   const token = generateToken(user._id);
+  const isProduction = process.env.NODE_ENV === "production";
 
   const options = {
     expires: new Date(Date.now() + getCookieMaxAge()),
     httpOnly: true,
-    sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
+    sameSite: isProduction ? "none" : "lax",
+    secure: isProduction,
   };
 
   const userData = user.toObject();
